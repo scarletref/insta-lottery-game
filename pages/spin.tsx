@@ -11,13 +11,16 @@ import { db } from '../lib/firebase';
 
 // Prize options shown on the wheel
 const wheelData = [
-  { option: '買一送一' },
-  { option: '九折' },
-  { option: '八折' },
-  { option: '七折' },
-  { option: '九折' },
-  { option: '八折' }
+  { option: '買一送一', style: { textColor: '#C1A400' }, image:{ uri: '/images/dancing_in_the_loop.png' } },
+  { option: '九折', style: { textColor: '#0C1F36' }},
+  { option: '八折', style: { textColor: '#00A8BD' } },
+  { option: '七折', style: { textColor: '#9531BD' } },
+  { option: '九折', style: { textColor: '#005100' } },
+  { option: '八折', style: { textColor: '#0E208D' } }
 ];
+
+
+const fontFamily = "Noto Serif TC";
 
 export default function SpinWheel() {
   // State variables for game logic and UI
@@ -96,7 +99,8 @@ export default function SpinWheel() {
 
   return (
     <div className="min-h-screen bg-[url('/images/light-paper-texture.png')] bg-cover bg-center flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <h1 className="text-3xl font-bold text-rose-600 mb-6">迷霧抽獎活動</h1>
+      <h1 className="text-3xl font-bold text-rose-600 mb-6">Loop & Win</h1>
+
 
       {/* IG帳號輸入欄位 */}
       {!returningUserInfo && !mustSpin && (
@@ -128,8 +132,13 @@ export default function SpinWheel() {
           backgroundColors={["#0E208D", "#005100", "#9531BD", "#00A8BD", "#0C1F36", "#C1A400"]}
           textColors={["#880E4F"]}
           outerBorderWidth={0}
-          radiusLineWidth={1}
+          radiusLineWidth={5}
+          radiusLineColor='#000000'
           innerRadius={0}
+          innerBorderWidth={0}
+          fontSize={30}
+          fontFamily={fontFamily}
+          textDistance={50}
           pointerProps={{
             src: '/images/arrow.png',
             style: {
@@ -138,6 +147,7 @@ export default function SpinWheel() {
               width: '80px',
               height: 'auto',
               zIndex: 50,
+              animation: mustSpin ? 'bounce 0.5s infinite' : 'none',
             },
           }}
         />
@@ -145,14 +155,14 @@ export default function SpinWheel() {
 
       {/* 輪盤背景圖 */}
       <div
-        className="absolute inset-0 bg-center bg-contain bg-no-repeat z-0"
-        style={{ backgroundImage: "url('/images/dancing_in_the_loop.png')" }}
-      />
+          className={`absolute inset-0 bg-center bg-contain bg-no-repeat z-0 transition-transform duration-[4500ms] ease-out ${mustSpin ? 'animate-spin-slow' : ''}`}
+          style={{ backgroundImage: "url('/images/dancing_in_the_loop.png')" }}
+        />
 
       {/* 中獎結果或重複參加提示 */}
       {showPopup && (
         <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-          <div className="bg-white bg-opacity-20 rounded-xl shadow-xl p-6 text-center max-w-sm pointer-events-auto">
+          <div className="bg-white/80 bg-opacity-20 rounded-xl shadow-xl p-6 text-center max-w-sm pointer-events-auto">
             {returningUserInfo ? (
               <>
                 <h2 className="text-2xl font-bold text-rose-600 mb-4">📌 您抽過獎了</h2>

@@ -1,1 +1,22 @@
 @import "tailwindcss";
+@keyframes spin-slow {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(1080deg); /* 3 full spins */
+    }
+  }
+  
+  .animate-spin-slow {
+    animation: spin-slow 4.5s ease-out forwards;
+  }
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+  
