@@ -9,12 +9,12 @@ import { collection, getDocs, doc, setDoc, query, where } from 'firebase/firesto
 import { db } from '../lib/firebase';
 
 const wheelData = [
-  { option: 'SPRING10' },
-  { option: 'SUMMER15' },
-  { option: 'FALL20' },
-  { option: 'WINTER25' },
-  { option: 'BONUS50' },
-  { option: 'NEWYEAR5' }
+  { option: '買一送一' },
+  { option: '九折' },
+  { option: '八折' },
+  { option: '七折' },
+  { option: '九折' },
+  { option: '八折' }
 ];
 
 export default function SpinWheel() {
@@ -69,7 +69,7 @@ export default function SpinWheel() {
       <h1 className="text-3xl font-bold text-rose-600 mb-6">🎡 Spin the Wheel 🎉</h1>
 
       {!hasSpun && (
-        <div className="mb-6">
+        <div className="relative z-20 mb-6 text-center">
           <input
             type="text"
             placeholder="Enter IG Handle"
@@ -87,20 +87,31 @@ export default function SpinWheel() {
         </div>
       )}
 
-      <Wheel
-        mustStartSpinning={mustSpin}
-        prizeNumber={prizeIndex}
-        data={wheelData}
-        onStopSpinning={() => setMustSpin(false)}
-        backgroundColors={['#FFEBEE', '#F8BBD0']}
-        textColors={['#880E4F']}
-      />
-
-      {hasSpun && (
-        <div className="mt-6 text-lg text-rose-700">
-          🎁 Your promo code: <span className="font-bold">{userCode}</span>
-        </div>
-      )}
+        <Wheel
+            mustStartSpinning={mustSpin}
+            prizeNumber={prizeIndex}
+            data={wheelData}
+            onStopSpinning={() => setMustSpin(false)}
+            backgroundColors={['#0E208D', '#005100', '#9531BD', '#00A8BD', '#0C1F36', '#C1A400']}
+            textColors={['#880E4F']} 
+            outerBorderWidth={0}  
+            radiusLineWidth={1} 
+            pointerProps={{
+            src: '/images/arrow.png',
+                style: {
+                    width: '400px',
+                    height: '400px',
+                    top: '-50px',
+                    left: '150px',
+                },
+            }}
+            innerRadius={0}
+        /> 
+        {/* ✅ Background image div */}
+        <div
+            className="absolute inset-0 bg-center bg-contain bg-no-repeat z-0"
+            style={{ backgroundImage: "url('/images/dancing_in_the_loop.png')" }}
+        />
     </div>
   );
 }
