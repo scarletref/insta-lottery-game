@@ -11,8 +11,8 @@ import { db } from '../lib/firebase';
 
 // Prize options shown on the wheel
 const wheelData = [
-  { option: '買一送一', style: { textColor: '#C1A400' }, image:{ uri: '/images/dancing_in_the_loop.png' } },
-  { option: '九折', style: { textColor: '#0C1F36' }},
+  { option: '買一送一', style: { textColor: '#C1A400' }, image: { uri: '/images/dancing_in_the_loop.png' } },
+  { option: '九折', style: { textColor: '#0C1F36' } },
   { option: '八折', style: { textColor: '#00A8BD' } },
   { option: '七折', style: { textColor: '#9531BD' } },
   { option: '九折', style: { textColor: '#005100' } },
@@ -22,6 +22,12 @@ const wheelData = [
 
 const fontFamily = "Noto Serif TC";
 
+function isValidInstagramHandle(handle: string): boolean {
+  const regex = /^(?!.*\.\.)(?!\.)[a-zA-Z0-9._]{1,30}(?<!\.)$/;
+  return regex.test(handle);
+}
+
+
 export default function SpinWheel() {
   // State variables for game logic and UI
   const [handle, setHandle] = useState(''); // IG handle
@@ -30,7 +36,7 @@ export default function SpinWheel() {
   const [prizeIndex, setPrizeIndex] = useState(0); // Index of selected prize
   const [hasSpun, setHasSpun] = useState(false); // Track if wheel has spun
   const [showPopup, setShowPopup] = useState(false); // Show popup result
-  const [returningUserInfo, setReturningUserInfo] = useState<{ code: string; createdAt: string } | null>(null);
+  const [returningUserInfo, setReturningUserInfo] = useState<{ code: string; createdAt: string; prize: string } | null>(null);
 
   // Reset all local states
   const resetState = () => {
@@ -42,10 +48,14 @@ export default function SpinWheel() {
     setReturningUserInfo(null);
   };
 
-  // Check Firestore to see if this user has already played
+  // Check Firestore to see if  playedthis user has already
   const checkUser = async () => {
     resetState();
     const trimmedHandle = handle.trim();
+    if (!isValidInstagramHandle(trimmedHandle)) {
+      alert('請輸入有效的 IG 帳號（僅限英數、底線、句點，不能開頭或結尾為句點）');
+      return;
+    }
     const userRef = doc(db, 'users', trimmedHandle);
     const userSnap = await getDoc(userRef);
 
@@ -53,6 +63,7 @@ export default function SpinWheel() {
       const docData = userSnap.data();
       setReturningUserInfo({
         code: docData.code,
+        prize: docData.prize,
         createdAt: new Date(docData.createdAt.seconds * 1000).toLocaleString(),
       });
       setShowPopup(true);
@@ -60,16 +71,23 @@ export default function SpinWheel() {
     }
 
     const codesSnapshot = await getDocs(collection(db, 'promo_codes'));
+    //const codes = codesSnapshot.docs;
+
     const unusedCodes = codesSnapshot.docs.filter(doc => !doc.data().used);
+    console.log('Unused codes:', unusedCodes.map(doc => doc.data().code)); // Log unused codes
 
     if (unusedCodes.length === 0) {
       alert('No promo codes left!');
       return;
     }
 
+
     const randomIndex = Math.floor(Math.random() * unusedCodes.length);
     const selectedCode = unusedCodes[randomIndex].data().code;
-    const wheelIndex = wheelData.findIndex(item => item.option === selectedCode);
+    const selectedPrizedName = unusedCodes[randomIndex].data().prize;
+    console.log('Selected code:', selectedCode); // Log selected code
+
+    const wheelIndex = wheelData.findIndex(item => item.option === selectedPrizedName);
 
     setPrizeIndex(wheelIndex);
     setMustSpin(true);
@@ -77,8 +95,10 @@ export default function SpinWheel() {
     await setDoc(doc(db, 'users', trimmedHandle), {
       handle: trimmedHandle,
       code: selectedCode,
+      prize: selectedPrizedName,
       createdAt: new Date(),
     });
+
 
     await setDoc(doc(db, 'promo_codes', selectedCode), {
       code: selectedCode,
@@ -86,7 +106,8 @@ export default function SpinWheel() {
       assignedTo: trimmedHandle,
     });
 
-    setUserCode(selectedCode);
+
+    setUserCode(selectedPrizedName);
     setHasSpun(true);
   };
 
@@ -99,7 +120,19 @@ export default function SpinWheel() {
 
   return (
     <div className="min-h-screen bg-[url('/images/light-paper-texture.png')] bg-cover bg-center flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <h1 className="text-3xl font-bold text-rose-600 mb-6">Loop & Win</h1>
+      <div className="relative w-full flex items-center justify-center mb-6">
+        <img
+          src="/images/misty.png"
+          alt="fog"
+          className="absolute left-[calc(50%-180px)] top-[-30px] w-32 opacity-60 animate-float-slow z-10"
+        />
+        <img
+          src="/images/fog.png"
+          alt="misty"
+          className="absolute right-[calc(50%-180px)] top-[-30px] w-32 opacity-60 animate-float-slower z-10"
+        />
+        <h1 className="text-3xl font-bold text-rose-600 mb-6">Loop & Win</h1>
+      </div>
 
 
       {/* IG帳號輸入欄位 */}
@@ -147,7 +180,7 @@ export default function SpinWheel() {
               width: '80px',
               height: 'auto',
               zIndex: 50,
-              animation: mustSpin ? 'bounce 0.5s infinite' : 'none',
+              animation: mustSpin ? 'bounce 0.5s infinite' : 'pointer-fly 5s infinite',
             },
           }}
         />
@@ -155,9 +188,9 @@ export default function SpinWheel() {
 
       {/* 輪盤背景圖 */}
       <div
-          className={`absolute inset-0 bg-center bg-contain bg-no-repeat z-0 transition-transform duration-[4500ms] ease-out ${mustSpin ? 'animate-spin-slow' : ''}`}
-          style={{ backgroundImage: "url('/images/dancing_in_the_loop.png')" }}
-        />
+        className={`absolute inset-0 bg-center bg-contain bg-no-repeat z-0 ${mustSpin ? 'animate-zoom-spin' : 'animate-spin-slow'}`}
+        style={{ backgroundImage: "url('/images/dancing_in_the_loop.png')" }}
+      />
 
       {/* 中獎結果或重複參加提示 */}
       {showPopup && (
@@ -169,7 +202,7 @@ export default function SpinWheel() {
                 <p className="text-lg mb-2">親愛的 {handle} ，您轉過一次了喔：</p>
                 <p className="text-rose-700 font-semibold mb-2">{returningUserInfo.createdAt}</p>
                 <p className="text-sm text-gray-600 mb-4">
-                  獎項是：<span className="font-bold">{returningUserInfo.code}</span>
+                  獎項是：<span className="font-bold">{returningUserInfo.prize} ({returningUserInfo.code})</span>
                 </p>
               </>
             ) : (

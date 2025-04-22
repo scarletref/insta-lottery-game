@@ -1,22 +1,76 @@
 @import "tailwindcss";
 @keyframes spin-slow {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(1080deg); /* 3 full spins */
-    }
+  0% {
+    transform: rotate(0deg) scale(1.2);
   }
-  
-  .animate-spin-slow {
-    animation: spin-slow 4.5s ease-out forwards;
+  50% {
+    transform: rotate(540deg) scale(0.9); /* 2 full spins */
   }
-@keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-6px);
-    }
+  100% {
+    transform: rotate(0deg) scale(1.2); /* 5 full spins */
+  }
 }
-  
+
+.animate-spin-slow {
+  animation: spin-slow 10s infinite;
+}
+
+
+@keyframes zoom-spin {
+  0% {
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(0.5);
+  }
+}
+
+.animate-zoom-spin {
+  animation: zoom-spin 5s infinite;
+}
+
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes pointer-fly {
+  0% {
+    transform: scale(1.5) translate(0px, 0px) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1) translate(200px, -200px) rotate(540deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5) translate(0px, 0px) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-100px); }
+}
+
+@keyframes float-slower {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(100px); }
+}
+
+.animate-float-slow {
+  animation: float-slow 3s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: float-slower 3s ease-in-out infinite;
+}
