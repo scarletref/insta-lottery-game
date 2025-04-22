@@ -114,7 +114,7 @@ export default function SpinWheel() {
   // Trigger popup when spin is done and prize is assigned
   useEffect(() => {
     if (!mustSpin && hasSpun && userCode) {
-      setShowPopup(true);
+      setTimeout(() => setShowPopup(true), 500);
     }
   }, [mustSpin, hasSpun, userCode]);
 
@@ -124,12 +124,12 @@ export default function SpinWheel() {
         <img
           src="/images/misty.png"
           alt="fog"
-          className="absolute left-[calc(50%-180px)] top-[-30px] w-32 opacity-60 animate-float-slow z-10"
+          className={`absolute left-[calc(50%-180px)] top-[-30px] w-32 opacity-60 z-10 ${mustSpin ? 'animate-zoom-spin' : 'animate-float-slow'}`}
         />
         <img
           src="/images/fog.png"
           alt="misty"
-          className="absolute right-[calc(50%-180px)] top-[-30px] w-32 opacity-60 animate-float-slower z-10"
+          className={`absolute right-[calc(50%-180px)] top-[-30px] w-32 opacity-60 z-10 ${mustSpin ? 'animate-zoom-spin' : 'animate-float-slower'}`}
         />
         <h1 className="text-3xl font-bold text-rose-600 mb-6">Loop & Win</h1>
       </div>
@@ -156,7 +156,12 @@ export default function SpinWheel() {
       )}
 
       {/* 抽獎輪盤 */}
-      <div className="relative w-[300px] sm:w-[400px] md:w-[500px]">
+      
+      <div className="relative w-[300px] sm:w-[400px] md:w-[500px] flex items-center justify-center mx-auto">
+        
+        <div className={`absolute inset-0 bg-center bg-contain bg-no-repeat z-0 ${mustSpin ? 'animate-zoom-spin' : 'animate-spin-slow'}`}
+          style={{ backgroundImage: "url('/images/dancing_in_the_loop.png')" }}
+        />
         <Wheel
           mustStartSpinning={mustSpin}
           prizeNumber={prizeIndex}
@@ -186,11 +191,6 @@ export default function SpinWheel() {
         />
       </div>
 
-      {/* 輪盤背景圖 */}
-      <div
-        className={`absolute inset-0 bg-center bg-contain bg-no-repeat z-0 ${mustSpin ? 'animate-zoom-spin' : 'animate-spin-slow'}`}
-        style={{ backgroundImage: "url('/images/dancing_in_the_loop.png')" }}
-      />
 
       {/* 中獎結果或重複參加提示 */}
       {showPopup && (

@@ -1,13 +1,13 @@
 @import "tailwindcss";
 @keyframes spin-slow {
   0% {
-    transform: rotate(0deg) scale(1.2);
+    transform: rotate(0deg) scale(2);
   }
   50% {
-    transform: rotate(540deg) scale(0.9); /* 2 full spins */
+    transform: rotate(540deg) scale(1.5); /* 2 full spins */
   }
   100% {
-    transform: rotate(0deg) scale(1.2); /* 5 full spins */
+    transform: rotate(0deg) scale(2); /* 5 full spins */
   }
 }
 
@@ -18,13 +18,13 @@
 
 @keyframes zoom-spin {
   0% {
-    transform: scale(0.5);
+    transform: scale(1);
   }
   50% {
-    transform: scale(1.5);
+    transform: scale(2);
   }
   100% {
-    transform: scale(0.5);
+    transform: scale(1);
   }
 }
 
@@ -36,15 +36,15 @@
 @keyframes bounce {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(-30px) rotate(20deg);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-30px) rotate(30deg);
   }
 }
 @keyframes pointer-fly {
   0% {
-    transform: scale(1.5) translate(0px, 0px) rotate(0deg);
+    transform: scale(1.5) translate(0px, -30px) rotate(20deg);
     opacity: 1;
   }
   50% {
@@ -52,7 +52,7 @@
     opacity: 1;
   }
   100% {
-    transform: scale(1.5) translate(0px, 0px) rotate(0deg);
+    transform: scale(1.5) translate(0px, -30px) rotate(20deg);
     opacity: 1;
   }
 }
