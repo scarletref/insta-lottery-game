@@ -151,10 +151,9 @@ export default function MinesweeperPage() {
 
     if (newBoard[r][c].mine) {
       setBoard(newBoard);
-      //setTimeout(() => {
-        setGameOver(true);
-        handlePrize('normal');
-      //}, 800); //
+      revealAllMines(newBoard);
+      setGameOver(true);
+      handlePrize('normal');
       return;
     }
 
@@ -166,6 +165,27 @@ export default function MinesweeperPage() {
     checkWin(newBoard);
   };
 
+  const revealAllMines = (boardData: Cell[][]) => {
+    const allPositions: [number, number][] = [];
+
+    // Collect all positions
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        if (!boardData[r][c].revealed) {
+          allPositions.push([r, c]);
+        }
+      }
+    }
+  
+    // Reveal cells one by one
+    allPositions.forEach(([r, c], index) => {
+      setTimeout(() => {
+        boardData[r][c].revealed = true;
+        setBoard(prev => [...prev.map(row => [...row])]); // trigger re-render
+      }, index * 80); // ⏰ Adjust delay (faster reveal)
+    });
+  };
+  
   const checkWin = (newBoard: Cell[][]) => {
     for (let r = 0; r < GRID_SIZE; r++) {
       for (let c = 0; c < GRID_SIZE; c++) {
@@ -174,14 +194,14 @@ export default function MinesweeperPage() {
         }
       }
     }
-    //setTimeout(() => {
+    revealAllMines(newBoard);
     setGameWon(true);
     handlePrize('special');
-    //  }, 800); // 
+
 
   };
 
-  const handlePrize = async (type: 'normal' | 'special') => {
+  const handlePrize = async (prize_type: 'normal' | 'special') => {
     const trimmedHandle = handle.trim();
     if (!isValidInstagramHandle(trimmedHandle)) {
       alert('請輸入有效的 IG 帳號（僅限英數、底線、句點，不能開頭或結尾為句點）');
@@ -200,7 +220,7 @@ export default function MinesweeperPage() {
     const codesSnapshot = await getDocs(
       query(
         collection(db, 'minesweeper_promo_codes'),
-        where('type', '==', type),
+        where('prize_type', '==', prize_type),
         where('used', '==', false)
       )
     );
@@ -224,7 +244,7 @@ export default function MinesweeperPage() {
     await setDoc(doc(db, 'minesweeper_promo_codes', selectedCode), {
       code: selectedCode,
       used: true,
-      type,
+      prize_type,
       assignedTo: trimmedHandle,
     });
 
@@ -237,8 +257,11 @@ export default function MinesweeperPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold text-rose-600 mb-6">Minesweeper Challenge</h1>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-4 bg-cover bg-center"
+      style={{ backgroundImage: "url('/images/minesweeper_bg.jpg')" }}
+    >
+      <h1 className="text-3xl font-bold text-black mb-6">耳環踩地雷</h1>
 
       <div className="mb-4">
         <input
@@ -246,64 +269,73 @@ export default function MinesweeperPage() {
           placeholder="請輸入您的ig帳號"
           value={handle}
           onChange={(e) => setHandle(e.target.value)}
-          className="border p-2 rounded-xl"
+          className="border p-2 rounded-xl bg-white"
           disabled={gameOver || gameWon}
         />
         <button
-          className="ml-2 px-4 py-2 bg-rose-500 text-white rounded-xl hover:bg-rose-600"
+          className="ml-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-rose-600"
           onClick={checkUser}
           disabled={!handle.trim()}
         >
         開始遊戲
         </button>
       </div>
-
+      {/* Floating Background Image */}
+      <img
+        src="/images/misty-head.png"
+        alt="floating background"
+        className="absolute inset-0 h-full object-cover opacity-30 animate-float pointer-events-none"
+      />
       <div className="grid grid-cols-5 gap-1">
         {board.map((row, r) => row.map((cell, c) => (
           <button
             key={`${r}-${c}`}
             onClick={() => gameStart?revealCell(r, c): (alert('請先輸入ig帳號喔'))}
-            className={`w-14 h-14 border flex items-center justify-center text-xl font-bold rounded transition-transform ${
-                cell.revealed
-                  ? (cell.mine
-                      ? 'bg-red-500 animate-explode'
-                      : 'bg-green-200')
-                  : (gameStart ? 'bg-yellow-100 animate-zoom-in' : 'bg-white')
-              }`}
+            className={`w-14 h-14 flex items-center justify-center text-xs font-bold rounded-full shadow-inner ${
+              cell.revealed
+                ? (cell.mine ? 'animate-explode z-10' : 'bg-green-200')
+                : (gameStart ? 'bg-black opacity-60 animate-zoom-in' : 'bg-black opacity-30')
+            }`}
               
             disabled={gameOver || gameWon}
           >
-            {cell.revealed && (
-            cell.mine ? '💣' : (cell.adjacent > 0 ? cell.adjacent : '')
-            )}
+          {cell.revealed && (
+            cell.mine ? (
+              <img src="/images/earring_2.png" alt="bomb" className="w-20 h-20" />
+            ) : (
+              <span className="animate-safe-pop">
+              {cell.adjacent > 0 ? cell.adjacent : ''}
+              </span>
+            )
+          )}
           </button>
         )))}
       </div>
 
       {showPopup && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white p-6 rounded-xl shadow-lg text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-start pt-12 z-20">
+          <div className="bg-white p-4 rounded-lg shadow-md text-center w-72 animate-slide-down">
+
           {returningUserInfo ? (
               <>
-                <h2 className="text-2xl font-bold text-rose-600 mb-4">📌 帳號重複</h2>
-                <p className="text-lg mb-2">親愛的 {handle} ，您玩過一次踩耳環了喔：</p>
+                <h2 className="text-xl font-bold text-rose-600 mb-2">帳號重複</h2>
+                <p className="text-base mb-2">親愛的 {handle} ，您玩過一次了喔：</p>
                 <p className="text-rose-700 font-semibold mb-2">在 {returningUserInfo.createdAt}</p>
-                <p className="text-sm text-gray-600 mb-4">
-                  獎項是：<span className="font-bold">{returningUserInfo.prize} ({returningUserInfo.code})</span>
+                <p className="text-xs text-gray-600 mb-2">
+                  折扣碼是：<span className="font-bold">{returningUserInfo.prize} ({returningUserInfo.code})</span>
                 </p>
               </>
             ) : (
               <>
-                <h2 className="text-2xl font-bold text-rose-600 mb-4">{gameWon?"🎉 恭喜！":"🎉 踩到耳環啦！"}</h2>
-                <p className="text-lg mb-2">親愛的 {handle} ，</p>
-                <p className="text-lg mb-2">{gameWon?"您贏了！得到特獎：":"雖然輸了，還是得到："}
-                <span className="font-bold">{userCode}</span> </p>
-                <p className="text-sm text-gray-600 mb-4">請截圖傳給迷霧主人喔</p>
+                <h2 className="text-xl font-bold text-rose-600 mb-2">{gameWon?"😎竟然贏了!?":"😵踩到地雷啦！"}</h2>
+                <p className="text-base mb-2">親愛的 {handle} ，{gameWon?"您真是太強了!":"沒關係~"}</p>
+                <p className="text-base mb-2">{gameWon?"您得到":"還是有獎"}：<span className="font-bold text-rose-700">{userCode}</span> </p>
+                <p className="text-xs text-gray-600 mb-2">請截圖傳給迷霧主人喔</p>
               </>
             )
           }       
             <button
-              className="mt-4 px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600"
+              className="mt-2 px-3 py-1.5 bg-rose-500 text-white rounded-md text-sm hover:bg-rose-600"
               onClick={() => setShowPopup(false)}
             >
               關閉
