@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: CC-BY-4.0
+// This file is licensed under Creative Commons Attribution 4.0 International (CC BY 4.0)
+
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
@@ -59,6 +62,7 @@ export default function SpinWheel() {
     const userRef = doc(db, 'users', trimmedHandle);
     const userSnap = await getDoc(userRef);
 
+
     if (userSnap.exists()) {
       const docData = userSnap.data();
       setReturningUserInfo({
@@ -68,6 +72,9 @@ export default function SpinWheel() {
       });
       setShowPopup(true);
       return;
+    }else{
+      alert('抽獎已經於2025/04/28結束囉，請期待下個小遊戲!');
+      return;
     }
 
     const codesSnapshot = await getDocs(collection(db, 'promo_codes'));
@@ -76,6 +83,7 @@ export default function SpinWheel() {
     const unusedCodes = codesSnapshot.docs.filter(doc => !doc.data().used);
     console.log('Unused codes:', unusedCodes.map(doc => doc.data().code)); // Log unused codes
 
+    
     if (unusedCodes.length === 0) {
       alert('No promo codes left!');
       return;
