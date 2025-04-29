@@ -13,12 +13,13 @@ interface Cell {
   revealed: boolean;
   flagged: boolean;
   adjacent: number;
+  img:number;
 }
 
 function createBoard(): Cell[][] {
   const board: Cell[][] = Array(GRID_SIZE)
     .fill(null)
-    .map(() => Array(GRID_SIZE).fill(null).map(() => ({ mine: false, revealed: false, flagged: false, adjacent: 0 })));
+    .map(() => Array(GRID_SIZE).fill(null).map(() => ({ mine: false, revealed: false, flagged: false, adjacent: 0 , img: 0})));
 
   let minesPlaced = 0;
   while (minesPlaced < NUM_MINES) {
@@ -27,6 +28,7 @@ function createBoard(): Cell[][] {
     if (!board[r][c].mine) {
       board[r][c].mine = true;
       minesPlaced++;
+      board[r][c].img = minesPlaced;
     }
   }
 
@@ -201,7 +203,22 @@ export default function MinesweeperPage() {
 
   };
 
-  const handlePrize = async (prize_type: 'normal' | 'special') => {
+  const adjacentColor = (adjacent: number) => {
+    switch (adjacent) {
+
+      case 1:
+        return 'bg-green-200 text-green-700';
+      case 2:
+        return 'bg-yellow-200 text-yellow-700';
+      case 3:
+        return 'bg-red-200 text-red-700';
+
+      default:
+        return 'bg-gray-200 text-gray-800'; // Adjacent = 0
+    }
+  };
+  
+  const handlePrize = async (prize_type: string) => {
     const trimmedHandle = handle.trim();
     if (!isValidInstagramHandle(trimmedHandle)) {
       alert('請輸入有效的 IG 帳號（僅限英數、底線、句點，不能開頭或結尾為句點）');
@@ -257,13 +274,24 @@ export default function MinesweeperPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center p-4 bg-cover bg-center"
-      style={{ backgroundImage: "url('/images/minesweeper_bg.jpg')" }}
-    >
-      <h1 className="text-3xl font-bold text-black mb-6">耳環踩地雷</h1>
 
-      <div className="mb-4">
+    <div className="min-h-screen bg-[url('/images/minesweeper_bg.jpg')] bg-cover bg-center flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      <div className="relative w-full flex items-center justify-center mb-6">
+        <img
+          src="/images/misty.png"
+          alt="fog"
+          className="absolute left-[calc(50%-180px)] top-[-30px] w-32 opacity-60 z-10 animate-float-slower"
+        />
+        <img
+          src="/images/fog.png"
+          alt="misty"
+          className="absolute right-[calc(50%-180px)] top-[-30px] w-32 opacity-60 z-10  animate-float-slower"
+        />
+        
+      </div>
+      <h1 className="text-3xl font-bold text-black mb-6 z-10">耳環踩地雷</h1>
+
+      <div className="mb-4 z-10">
         <input
           type="text"
           placeholder="請輸入您的ig帳號"
@@ -279,29 +307,30 @@ export default function MinesweeperPage() {
         >
         開始遊戲
         </button>
+
       </div>
-      {/* Floating Background Image */}
-      <img
-        src="/images/misty-head.png"
-        alt="floating background"
-        className="absolute inset-0 h-full object-cover opacity-30 animate-float pointer-events-none"
-      />
-      <div className="grid grid-cols-5 gap-1">
+      <div className={`absolute inset-0 bg-center bg-contain bg-no-repeat z-1 animate-head`}
+            style={{ backgroundImage: "url('/images/misty-head.png')" }}
+          />
+
+      <div className="grid grid-cols-5 gap-1 z-10">
+ 
         {board.map((row, r) => row.map((cell, c) => (
           <button
             key={`${r}-${c}`}
             onClick={() => gameStart?revealCell(r, c): (alert('請先輸入ig帳號喔'))}
+
             className={`w-14 h-14 flex items-center justify-center text-xs font-bold rounded-full shadow-inner ${
               cell.revealed
-                ? (cell.mine ? 'animate-explode z-10' : 'bg-green-200')
+                ? (cell.mine ? 'animate-explode z-10' : adjacentColor(cell.adjacent))
                 : (gameStart ? 'bg-black opacity-60 animate-zoom-in' : 'bg-black opacity-30')
             }`}
-              
+
             disabled={gameOver || gameWon}
           >
           {cell.revealed && (
             cell.mine ? (
-              <img src="/images/earring_2.png" alt="bomb" className="w-20 h-20" />
+              <img src={`/images/earring_${cell.img}.png`} alt="bomb" className="w-20 h-20" />
             ) : (
               <span className="animate-safe-pop">
               {cell.adjacent > 0 ? cell.adjacent : ''}
