@@ -3,30 +3,56 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { v4 as uuidv4 } from 'uuid';
-import dynamic from 'next/dynamic';
 import html2canvas from 'html2canvas';
 import { db } from '../lib/firebase';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 
-const Draggable = dynamic(() => import('react-draggable'), { ssr: false });
-
-const ringImages = [
-  '/images/ring1.png',
-  '/images/ring2.png',
-  '/images/ring3.png',
-  '/images/ring4.png',
+const ringOptions = [
+  {
+    id: 'ring1',
+    icon: '/images/ring1.png',
+    worn: '/images/ring1_worn.png',
+    style: 'absolute top-[198px] left-[86px] w-12 h-12', // index finger
+    width: 32,
+    height: 30,
+  },
+  {
+    id: 'ring2',
+    icon: '/images/ring2.png',
+    worn: '/images/ring2_worn.png',
+    style: 'absolute top-[199px] left-[201px] w-12 h-12', // middle finger
+    width: 32,
+    height: 27,
+  },
+  {
+    id: 'ring3',
+    icon: '/images/ring3.png',
+    worn: '/images/ring3_worn.png',
+    style: 'absolute top-[186px] left-[249px] w-12 h-12', // ring finger
+    width: 33,
+    height: 19,
+  },
+  {
+    id: 'ring4',
+    icon: '/images/ring4.png',
+    worn: '/images/ring4_worn.png',
+    style: 'absolute top-[191.5px] left-[63px] w-12 h-12', // pinky finger
+    width: 29,
+    height: 20,
+  },
 ];
 
 export default function HandRingGame() {
-  const [placedRings, setPlacedRings] = useState<{ id: string; src: string }[]>([]);
+  const [placedRingIds, setPlacedRingIds] = useState<string[]>([]);
   const [promoCode, setPromoCode] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [igHandle, setIgHandle] = useState('');
   const gameRef = useRef<HTMLDivElement>(null);
 
-  const handlePlaceRing = (src: string) => {
-    setPlacedRings([...placedRings, { id: uuidv4(), src }]);
+  const handlePlaceRing = (ringId: string) => {
+    if (!placedRingIds.includes(ringId)) {
+      setPlacedRingIds([...placedRingIds, ringId]);
+    }
   };
 
   const handleFinish = async () => {
@@ -94,29 +120,42 @@ export default function HandRingGame() {
 
       {/* Ring Selector */}
       <div className="flex space-x-3 mb-4 z-20">
-        {ringImages.map((src, index) => (
+        {ringOptions.map((ring) => (
           <button
-            key={index}
-            onClick={() => handlePlaceRing(src)}
+            key={ring.id}
+            onClick={() => handlePlaceRing(ring.id)}
             className="w-16 h-16 border rounded-full overflow-hidden shadow-md hover:scale-105 transition"
           >
-            <Image src={src} alt={`Ring ${index + 1}`} width={64} height={64} />
+            <Image src={ring.icon} alt={`Ring ${ring.id}`} width={64} height={64} />
           </button>
         ))}
       </div>
 
-      {/* Hand background with ring placements */}
-      <div ref={gameRef} className="relative w-[320px] h-[480px] bg-white rounded-lg shadow-lg">
+      {/* Hand background with placed rings */}
+      <div ref={gameRef} className="relative w-[320px] h-[480px] rounded-lg shadow-lg" style={{ backgroundColor: '#D6EA95' }}>
         <Image src="/images/hands.png" alt="hands" layout="fill" objectFit="contain" />
 
-        {/* Placed Rings */}
-        {placedRings.map(ring => (
-          <Draggable key={ring.id}>
-            <div className="absolute cursor-move w-12 h-12">
-              <Image src={ring.src} alt="ring" layout="fill" objectFit="contain" />
-            </div>
-          </Draggable>
-        ))}
+        {/* Render selected rings on hand */}
+        {ringOptions.map(
+            (ring) =>
+                placedRingIds.includes(ring.id) && (
+                <div
+                    key={ring.id}
+                    className={`${ring.style} cursor-pointer`}
+                    onClick={() =>
+                    setPlacedRingIds((prev) => prev.filter((id) => id !== ring.id))
+                    }
+                    title="點擊卸下這枚戒指"
+                >
+                    <Image
+                    src={ring.worn}
+                    alt="ring"
+                    width={ring.width}
+                    height={ring.height}
+                    />
+                </div>
+                )
+        )}
       </div>
 
       <button
