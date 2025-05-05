@@ -48,6 +48,7 @@ export default function HandRingGame() {
   const [showPopup, setShowPopup] = useState(false);
   const [igHandle, setIgHandle] = useState('');
   const gameRef = useRef<HTMLDivElement>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const handlePlaceRing = (ringId: string) => {
     if (!placedRingIds.includes(ringId)) {
@@ -57,7 +58,7 @@ export default function HandRingGame() {
 
   const handleFinish = async () => {
     const trimmedHandle = igHandle.trim();
-    if (!trimmedHandle) return alert('請輸入您的 IG 帳號');
+    if (!trimmedHandle) return alert('請輸入您的 ig 帳號');
 
     const userRef = doc(db, 'users', trimmedHandle);
     const userSnap = await getDoc(userRef);
@@ -95,12 +96,10 @@ export default function HandRingGame() {
 
     // capture screenshot
     if (gameRef.current) {
-      html2canvas(gameRef.current).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `ring-style-${trimmedHandle}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
-      });
+        html2canvas(gameRef.current).then(canvas => {
+          const dataUrl = canvas.toDataURL('image/png');
+          setPreviewImage(dataUrl); // Show it instead of downloading
+        });
     }
   };
 
@@ -170,7 +169,12 @@ export default function HandRingGame() {
           <h2 className="text-xl font-bold text-pink-600 mb-2">🎁 恭喜！</h2>
           <p>帳號 {igHandle} 的折扣碼：</p>
           <p className="text-lg font-mono text-gray-800 mt-1">{promoCode}</p>
-          <p className="text-sm mt-2 text-gray-500">已自動下載圖片，可分享到 IG！</p>
+          {previewImage && (
+            <div className="mt-4">
+                <p className="text-sm text-gray-500 mb-1">長按下方圖片即可儲存或分享到 IG：</p>
+                <img src={previewImage} alt="ring preview" className="w-full rounded shadow" />
+            </div>
+          )}
           <button
             className="mt-3 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
             onClick={() => setShowPopup(false)}
